@@ -34,11 +34,16 @@ export function SpinHistory({ wheelId, refreshKey = 0 }: SpinHistoryProps) {
   async function handleClear() {
     if (clearing) return
     setClearing(true)
+    setError("")
     try {
-      await fetch(`/api/wheels/${wheelId}/history`, { method: "DELETE" })
+      const res = await fetch(`/api/wheels/${wheelId}/history`, { method: "DELETE" })
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || "Delete failed")
+      }
       setHistory([])
-    } catch {
-      setError("Failed to clear history")
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to clear history")
     } finally {
       setClearing(false)
     }
