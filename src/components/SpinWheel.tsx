@@ -204,14 +204,15 @@ export function SpinWheel({ wheelId, items, onSpinComplete }: SpinWheelProps) {
         setSpinning(false)
         setResult(winner.label)
         setShowResult(true)
-        onSpinComplete?.(winner.label)
 
-        // Fire-and-forget save
+        // Save first, then refresh history so the new entry is already in the DB
         fetch("/api/spin", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ wheel_id: wheelId, result: winner.label }),
-        }).catch(console.error)
+        })
+          .then(() => onSpinComplete?.(winner.label))
+          .catch(console.error)
       }
     }
 
