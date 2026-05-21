@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { SpinWheel, type WheelItem } from "@/components/SpinWheel"
 import { EditPanel } from "@/components/EditPanel"
+import { AIGeneratePanel } from "@/components/AIGeneratePanel"
 
 interface WheelViewProps {
   wheelId: string
@@ -14,6 +15,7 @@ export function WheelView({ wheelId, initialName, initialItems }: WheelViewProps
   const [items, setItems] = useState<WheelItem[]>(initialItems)
   const [name, setName] = useState(initialName)
   const [editing, setEditing] = useState(false)
+  const [aiOpen, setAiOpen] = useState(false)
 
   return (
     <div className="flex flex-col gap-6">
@@ -25,7 +27,13 @@ export function WheelView({ wheelId, initialName, initialItems }: WheelViewProps
         </div>
         <div className="flex items-center gap-4">
           <button
-            onClick={() => setEditing((v) => !v)}
+            onClick={() => { setAiOpen((v) => !v); setEditing(false) }}
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {aiOpen ? "Close AI" : "✨ AI"}
+          </button>
+          <button
+            onClick={() => { setEditing((v) => !v); setAiOpen(false) }}
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
             {editing ? "Done" : "Edit"}
@@ -48,6 +56,17 @@ export function WheelView({ wheelId, initialName, initialItems }: WheelViewProps
         <p className="text-center text-muted-foreground py-8 text-sm">
           Add at least 2 items to spin the wheel.
         </p>
+      )}
+
+      {/* AI Generate panel */}
+      {aiOpen && (
+        <AIGeneratePanel
+          wheelId={wheelId}
+          onItemsChange={(newItems) => {
+            setItems(newItems)
+            setAiOpen(false)
+          }}
+        />
       )}
 
       {/* Edit panel — shown when editing */}

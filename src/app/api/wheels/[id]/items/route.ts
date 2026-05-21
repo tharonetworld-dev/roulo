@@ -1,6 +1,54 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextResponse, type NextRequest } from "next/server"
 
+// PUT /api/wheels/[id]/items — bulk-replace all items
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const supabase = createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
+  // Verify wheel belongs to user
+  const { data: wheel } = await supabase
+    .from("wheels")
+    .select("id")
+    .eq("id", params.id)
+    .eq("user_id", user.id)
+    .single()
+  if (!wheel) return NextResponse.json({ error: "Not found" }, { status: 404 })
+
+  const { labels } = await request.json()
+  if (!Array.isArray(labels) || labels.length < 2)
+    return NextResponse.json({ error: "Need at least 2 labels" }, { status: 400 })
+
+  // Delete existing items
+  const { error: delError } = await supabase
+    .from("wheel_items")
+    .delete()
+    .eq("wheel_id", params.id)
+  if (delError) return NextResponse.json({ error: delError.message }, { status: 500 })
+
+  // Insert new items
+  const newItems = labels.slice(0, 8).map((label: string, i: number) => ({
+    wheel_id: params.id,
+    label: label.trim(),
+    weight: 1,
+    position: i,
+  }))
+
+  const { data, error } = await supabase
+    .from("wheel_items")
+    .insert(newItems)
+    .select()
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  return NextResponse.json(data)
+}
+
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
