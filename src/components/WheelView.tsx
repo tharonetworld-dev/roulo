@@ -73,10 +73,7 @@ export function WheelView({ initialWheels, activeWheelId }: WheelViewProps) {
     <div className="flex flex-col gap-4 w-full">
       {/* Top bar */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Roulo</h1>
-          <p className="text-sm text-muted-foreground">{name}</p>
-        </div>
+        <h1 className="text-2xl font-bold tracking-tight">Roulo</h1>
         <div className="flex items-center gap-3">
           <button
             onClick={() => toggleSub("ai")}
@@ -117,6 +114,8 @@ export function WheelView({ initialWheels, activeWheelId }: WheelViewProps) {
 
         {/* CENTER — Wheel + sub-panels */}
         <div className="order-1 lg:order-2 flex flex-col items-center gap-4 w-full">
+          <p className="text-base font-semibold text-foreground">{name}</p>
+
           {items.length >= 2 ? (
             <SpinWheel
               key={currentId}
