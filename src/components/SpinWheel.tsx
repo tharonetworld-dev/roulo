@@ -7,6 +7,61 @@ import { WHEEL_COLORS as COLORS } from "@/lib/wheel-colors"
 const SIZE = 300 // logical px
 const DPR = 2   // render at 2× for retina sharpness
 
+// ── Confetti ────────────────────────────────────────────────────────────────
+const CONFETTI_COLORS = ["#6366f1","#ec4899","#f59e0b","#10b981","#3b82f6","#f97316","#8b5cf6"]
+
+interface Particle {
+  x: number; y: number
+  vx: number; vy: number
+  r: number; color: string; angle: number; spin: number
+}
+
+function burstConfetti(originX: number, originY: number) {
+  const canvas = document.createElement("canvas")
+  canvas.style.cssText =
+    "position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9999"
+  canvas.width = window.innerWidth
+  canvas.height = window.innerHeight
+  document.body.appendChild(canvas)
+  const ctx = canvas.getContext("2d")!
+
+  const particles: Particle[] = Array.from({ length: 90 }, () => {
+    const angle = Math.random() * Math.PI * 2
+    const speed = 4 + Math.random() * 8
+    return {
+      x: originX, y: originY,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 4,
+      r: 5 + Math.random() * 5,
+      color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+      angle: Math.random() * Math.PI * 2,
+      spin: (Math.random() - 0.5) * 0.3,
+    }
+  })
+
+  let frame = 0
+  function tick() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    particles.forEach((p) => {
+      p.x += p.vx; p.y += p.vy
+      p.vy += 0.25          // gravity
+      p.vx *= 0.98          // air resistance
+      p.angle += p.spin
+      ctx.save()
+      ctx.translate(p.x, p.y)
+      ctx.rotate(p.angle)
+      ctx.fillStyle = p.color
+      ctx.globalAlpha = Math.max(0, 1 - frame / 80)
+      ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.5)
+      ctx.restore()
+    })
+    frame++
+    if (frame < 90) requestAnimationFrame(tick)
+    else canvas.remove()
+  }
+  requestAnimationFrame(tick)
+}
+
 function easeOutQuart(t: number) {
   return 1 - Math.pow(1 - t, 4)
 }
@@ -204,6 +259,13 @@ export function SpinWheel({ wheelId, items, onSpinComplete }: SpinWheelProps) {
         setSpinning(false)
         setResult(winner.label)
         setShowResult(true)
+
+        // Confetti burst from wheel center
+        const canvas = canvasRef.current
+        if (canvas) {
+          const rect = canvas.getBoundingClientRect()
+          burstConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2)
+        }
 
         // Save first, then refresh history so the new entry is already in the DB
         fetch("/api/spin", {
