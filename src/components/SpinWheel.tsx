@@ -20,9 +20,10 @@ export interface WheelItem {
 interface SpinWheelProps {
   wheelId: string
   items: WheelItem[]
+  onSpinComplete?: (result: string) => void
 }
 
-export function SpinWheel({ wheelId, items }: SpinWheelProps) {
+export function SpinWheel({ wheelId, items, onSpinComplete }: SpinWheelProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rotationRef = useRef(0)
   const rafRef = useRef<number | null>(null)
@@ -203,6 +204,7 @@ export function SpinWheel({ wheelId, items }: SpinWheelProps) {
         setSpinning(false)
         setResult(winner.label)
         setShowResult(true)
+        onSpinComplete?.(winner.label)
 
         // Fire-and-forget save
         fetch("/api/spin", {
@@ -255,10 +257,7 @@ export function SpinWheel({ wheelId, items }: SpinWheelProps) {
           <p className="text-sm text-muted-foreground mb-1">The wheel says…</p>
           <p className="text-3xl font-bold tracking-tight">{result}</p>
           <button
-            onClick={() => {
-              setShowResult(false)
-              setResult(null)
-            }}
+            onClick={handleSpin}
             className="mt-3 text-xs text-muted-foreground underline underline-offset-2"
           >
             spin again

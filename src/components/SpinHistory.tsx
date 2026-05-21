@@ -10,6 +10,7 @@ interface SpinRecord {
 
 interface SpinHistoryProps {
   wheelId: string
+  refreshKey?: number
 }
 
 function timeAgo(dateStr: string): string {
@@ -24,7 +25,7 @@ function timeAgo(dateStr: string): string {
   return `${days}d ago`
 }
 
-export function SpinHistory({ wheelId }: SpinHistoryProps) {
+export function SpinHistory({ wheelId, refreshKey = 0 }: SpinHistoryProps) {
   const [history, setHistory] = useState<SpinRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
@@ -40,38 +41,40 @@ export function SpinHistory({ wheelId }: SpinHistoryProps) {
       })
       .catch(() => setError("Failed to load history"))
       .finally(() => setLoading(false))
-  }, [wheelId])
+  }, [wheelId, refreshKey])
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-      <p className="text-sm font-medium text-foreground">Recent Spins</p>
+    <div className="space-y-2">
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground px-1">
+        Recent Spins
+      </p>
 
       {loading && (
-        <p className="text-xs text-muted-foreground py-2">Loading…</p>
+        <p className="text-xs text-muted-foreground px-1 py-2">Loading…</p>
       )}
 
       {error && (
-        <p className="text-xs text-destructive">{error}</p>
+        <p className="text-xs text-destructive px-1">{error}</p>
       )}
 
       {!loading && !error && history.length === 0 && (
-        <p className="text-xs text-muted-foreground py-2">
-          No spins yet — give the wheel a spin!
+        <p className="text-xs text-muted-foreground px-1 py-2">
+          No spins yet!
         </p>
       )}
 
       {!loading && history.length > 0 && (
         <ul className="space-y-1">
-          {history.map((entry, i) => (
+          {history.slice(0, 10).map((entry, i) => (
             <li
               key={entry.id}
-              className="flex items-center justify-between rounded-lg px-3 py-2 text-sm"
-              style={{ opacity: 1 - i * 0.04 }}
+              className="flex items-center justify-between rounded-lg px-3 py-2 text-sm bg-muted/50"
+              style={{ opacity: Math.max(0.35, 1 - i * 0.07) }}
             >
               <span className="font-medium text-foreground truncate">
                 {entry.result}
               </span>
-              <span className="ml-3 shrink-0 text-xs text-muted-foreground">
+              <span className="ml-2 shrink-0 text-xs text-muted-foreground">
                 {timeAgo(entry.created_at)}
               </span>
             </li>

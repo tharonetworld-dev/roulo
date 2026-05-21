@@ -56,8 +56,8 @@ export default async function AppPage() {
   const activeWheel = wheels![0]
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-background px-4 py-8">
-      <div className="w-full max-w-sm">
+    <main className="min-h-screen bg-background px-6 py-8">
+      <div className="w-full max-w-5xl mx-auto">
         <WheelView
           initialWheels={wheels ?? []}
           activeWheelId={activeWheel.id}

@@ -87,8 +87,10 @@ export function WheelSwitcher({
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-      <p className="text-sm font-medium text-foreground">My Wheels</p>
+    <div className="space-y-2">
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground px-1">
+        My Wheels
+      </p>
 
       {/* Wheel list */}
       <ul className="space-y-1">
