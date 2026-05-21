@@ -22,10 +22,10 @@ export async function GET(
 
   const { data, error } = await supabase
     .from("spin_history")
-    .select("id, result, created_at")
+    .select("id, result")
     .eq("wheel_id", params.id)
-    .order("created_at", { ascending: false })
-    .limit(20)
+    .order("id", { ascending: false })
+    .limit(10)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data)

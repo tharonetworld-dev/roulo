@@ -119,6 +119,7 @@ export function WheelView({ initialWheels, activeWheelId }: WheelViewProps) {
         <div className="order-1 lg:order-2 flex flex-col items-center gap-4 w-full">
           {items.length >= 2 ? (
             <SpinWheel
+              key={currentId}
               wheelId={currentId}
               items={items}
               onSpinComplete={() => setSpinCount((c) => c + 1)}

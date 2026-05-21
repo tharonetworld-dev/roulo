@@ -5,7 +5,6 @@ import { useEffect, useState } from "react"
 interface SpinRecord {
   id: string
   result: string
-  created_at: string
 }
 
 interface SpinHistoryProps {
@@ -13,17 +12,6 @@ interface SpinHistoryProps {
   refreshKey?: number
 }
 
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const mins = Math.floor(diff / 60000)
-  const hours = Math.floor(diff / 3600000)
-  const days = Math.floor(diff / 86400000)
-
-  if (mins < 1) return "just now"
-  if (mins < 60) return `${mins}m ago`
-  if (hours < 24) return `${hours}h ago`
-  return `${days}d ago`
-}
 
 export function SpinHistory({ wheelId, refreshKey = 0 }: SpinHistoryProps) {
   const [history, setHistory] = useState<SpinRecord[]>([])
@@ -65,17 +53,14 @@ export function SpinHistory({ wheelId, refreshKey = 0 }: SpinHistoryProps) {
 
       {!loading && history.length > 0 && (
         <ul className="space-y-1">
-          {history.slice(0, 10).map((entry, i) => (
+          {history.map((entry, i) => (
             <li
               key={entry.id}
-              className="flex items-center justify-between rounded-lg px-3 py-2 text-sm bg-muted/50"
+              className="flex items-center rounded-lg px-3 py-2 text-sm bg-muted/50"
               style={{ opacity: Math.max(0.35, 1 - i * 0.07) }}
             >
               <span className="font-medium text-foreground truncate">
                 {entry.result}
-              </span>
-              <span className="ml-2 shrink-0 text-xs text-muted-foreground">
-                {timeAgo(entry.created_at)}
               </span>
             </li>
           ))}
