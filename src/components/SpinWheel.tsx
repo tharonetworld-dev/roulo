@@ -74,12 +74,12 @@ export function SpinWheel({ wheelId, items }: SpinWheelProps) {
         ctx.lineWidth = 1.5
         ctx.stroke()
 
-        // Label text
+        // Label text — always read left-to-right by flipping segments on the left half
         ctx.save()
         ctx.translate(cx, cy)
-        ctx.rotate(angle + slice / 2)
-        ctx.textAlign = "right"
-        ctx.fillStyle = "#ffffff"
+        const midAngle = angle + slice / 2
+        const isLeftHalf = Math.cos(midAngle) < 0
+        ctx.rotate(midAngle)
         ctx.shadowColor = "rgba(0,0,0,0.4)"
         ctx.shadowBlur = 3
         const fontSize = Math.max(9, Math.min(13, 120 / items.length))
@@ -89,7 +89,16 @@ export function SpinWheel({ wheelId, items }: SpinWheelProps) {
           item.label.length > maxLen
             ? item.label.slice(0, maxLen - 1) + "…"
             : item.label
-        ctx.fillText(label, r - 10, fontSize * 0.38)
+        ctx.fillStyle = "#ffffff"
+        if (isLeftHalf) {
+          // Flip so text reads left-to-right
+          ctx.rotate(Math.PI)
+          ctx.textAlign = "left"
+          ctx.fillText(label, -(r - 10), fontSize * 0.38)
+        } else {
+          ctx.textAlign = "right"
+          ctx.fillText(label, r - 10, fontSize * 0.38)
+        }
         ctx.restore()
 
         angle += slice
