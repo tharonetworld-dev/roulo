@@ -5,6 +5,7 @@ import { SpinWheel, type WheelItem } from "@/components/SpinWheel"
 import { EditPanel } from "@/components/EditPanel"
 import { AIGeneratePanel } from "@/components/AIGeneratePanel"
 import { WheelSwitcher, type WheelSummary } from "@/components/WheelSwitcher"
+import { SpinHistory } from "@/components/SpinHistory"
 
 interface WheelViewProps {
   initialWheels: WheelSummary[]
@@ -21,7 +22,7 @@ export function WheelView({ initialWheels, activeWheelId }: WheelViewProps) {
   )
   const [name, setName] = useState(current?.name ?? "")
 
-  const [panel, setPanel] = useState<"none" | "edit" | "ai" | "wheels">("none")
+  const [panel, setPanel] = useState<"none" | "edit" | "ai" | "wheels" | "history">("none")
 
   // Keep items + the wheels[] entry in sync so counts and state are correct when switching
   function applyItems(newItems: WheelItem[], wheelId = currentId) {
@@ -54,7 +55,7 @@ export function WheelView({ initialWheels, activeWheelId }: WheelViewProps) {
     }
   }
 
-  function toggle(p: "edit" | "ai" | "wheels") {
+  function toggle(p: "edit" | "ai" | "wheels" | "history") {
     setPanel((prev) => (prev === p ? "none" : p))
   }
 
@@ -72,6 +73,12 @@ export function WheelView({ initialWheels, activeWheelId }: WheelViewProps) {
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
             {panel === "wheels" ? "Close" : "Wheels"}
+          </button>
+          <button
+            onClick={() => toggle("history")}
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {panel === "history" ? "Close" : "History"}
           </button>
           <button
             onClick={() => toggle("ai")}
@@ -103,6 +110,11 @@ export function WheelView({ initialWheels, activeWheelId }: WheelViewProps) {
         <p className="text-center text-muted-foreground py-8 text-sm">
           Add at least 2 items to spin the wheel.
         </p>
+      )}
+
+      {/* History panel */}
+      {panel === "history" && (
+        <SpinHistory wheelId={currentId} />
       )}
 
       {/* Wheels panel */}
