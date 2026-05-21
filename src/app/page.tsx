@@ -67,6 +67,9 @@ export default function Home() {
             <Link href="/pricing">See pricing</Link>
           </Button>
         </div>
+        <p className="text-sm text-gray-500 mt-2 text-center">
+          30 days of Pro on us. No credit card required.
+        </p>
       </section>
 
       {/* Features */}

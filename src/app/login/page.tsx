@@ -81,6 +81,9 @@ export default function LoginPage() {
                   required
                   autoComplete="email"
                 />
+                <p className="text-xs text-muted-foreground">
+                  No credit card required.
+                </p>
               </div>
               {error && (
                 <p className="text-sm text-destructive">{error}</p>

@@ -53,7 +53,10 @@ export default function PricingPage() {
         {/* Pricing cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-2xl">
           {/* Monthly */}
-          <div className="rounded-2xl border border-border bg-card p-8 flex flex-col gap-5">
+          <div className="rounded-2xl border border-border bg-card p-8 flex flex-col gap-5 relative">
+            <span className="absolute top-3 right-3 bg-emerald-500 text-white text-xs font-bold px-2 py-1 rounded">
+              30 DAYS FREE
+            </span>
             <div>
               <p className="text-sm text-muted-foreground uppercase tracking-wide font-medium">
                 Monthly
@@ -63,6 +66,9 @@ export default function PricingPage() {
                 <span className="text-base font-normal text-muted-foreground">
                   /mo
                 </span>
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Start free. We won&apos;t charge you for 30 days.
               </p>
             </div>
             <ul className="space-y-2 text-sm text-muted-foreground text-left flex-1">
@@ -85,6 +91,9 @@ export default function PricingPage() {
             <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
               Best value
             </span>
+            <span className="absolute top-3 right-3 bg-emerald-500 text-white text-xs font-bold px-2 py-1 rounded">
+              30 DAYS FREE
+            </span>
             <div>
               <p className="text-sm text-muted-foreground uppercase tracking-wide font-medium">
                 Yearly
@@ -97,6 +106,9 @@ export default function PricingPage() {
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 $3.25/mo — save 35%
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Start free. We won&apos;t charge you for 30 days.
               </p>
             </div>
             <ul className="space-y-2 text-sm text-muted-foreground text-left flex-1">
