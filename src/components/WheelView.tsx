@@ -23,12 +23,20 @@ export function WheelView({ initialWheels, activeWheelId }: WheelViewProps) {
 
   const [panel, setPanel] = useState<"none" | "edit" | "ai" | "wheels">("none")
 
+  // Keep items + the wheels[] entry in sync so counts and state are correct when switching
+  function applyItems(newItems: WheelItem[], wheelId = currentId) {
+    setItems(newItems)
+    setWheels((prev) =>
+      prev.map((w) => (w.id === wheelId ? { ...w, wheel_items: newItems } : w))
+    )
+  }
+
   function switchWheel(wheel: WheelSummary) {
-    setCurrentId(wheel.id)
     const sorted = (wheel.wheel_items ?? [])
       .slice()
       .sort((a, b) => (a as WheelItem & { position: number }).position - (b as WheelItem & { position: number }).position)
-    setItems(sorted)
+    setCurrentId(wheel.id)
+    setItems(sorted)   // direct set — we're switching, not mutating this wheel's stored items
     setName(wheel.name)
     setPanel("none")
   }
@@ -113,7 +121,7 @@ export function WheelView({ initialWheels, activeWheelId }: WheelViewProps) {
         <AIGeneratePanel
           wheelId={currentId}
           onItemsChange={(newItems) => {
-            setItems(newItems)
+            applyItems(newItems)
             setPanel("none")
           }}
         />
@@ -135,7 +143,7 @@ export function WheelView({ initialWheels, activeWheelId }: WheelViewProps) {
                 prev.map((w) => (w.id === currentId ? { ...w, name: n } : w))
               )
             }}
-            onItemsChange={setItems}
+            onItemsChange={applyItems}
           />
         </div>
       )}
