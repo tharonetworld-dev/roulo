@@ -167,13 +167,13 @@ export function SpinWheel({ wheelId, items }: SpinWheelProps) {
       const slice = (item.weight / totalWeight) * Math.PI * 2
       if (item.id === winner.id) {
         const centerAngle = startAngle + slice / 2
-        // We want the winner's center to align with the top pointer (angle 0 from top).
-        // draw() starts segments at (rotation - π/2), so the pointer hits a segment when:
-        //   rotation - π/2 + centerAngle ≡ 0  (mod 2π)
-        //   → rotation = π/2 - centerAngle + 2πk
+        // draw() renders segment i at canvas angle: (rotation - π/2 + wheelAngle_i)
+        // Pointer is fixed at canvas angle -π/2 (top).
+        // Pointer hits wheel angle θ when: rotation - π/2 + θ = -π/2 + 2πk
+        //   → rotation = -θ + 2πk  → finalRotation ≡ -centerAngle (mod 2π)
         const base = rotationRef.current % (2 * Math.PI)
-        let extra = (Math.PI / 2 - centerAngle - base) % (2 * Math.PI)
-        if (extra < 0) extra += 2 * Math.PI
+        let extra = (-centerAngle - base) % (2 * Math.PI)
+        if (extra <= 0) extra += 2 * Math.PI   // always spin forward
         // Add 4–6 full rotations for satisfying animation
         const fullSpins = (4 + Math.floor(Math.random() * 3)) * 2 * Math.PI
         return rotationRef.current + extra + fullSpins
