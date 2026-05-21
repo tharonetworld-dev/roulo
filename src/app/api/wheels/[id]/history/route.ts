@@ -24,7 +24,7 @@ export async function GET(
     .from("spin_history")
     .select("id, result")
     .eq("wheel_id", params.id)
-    .order("id", { ascending: true })
+    .order("created_at", { ascending: true })
     .limit(10)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
