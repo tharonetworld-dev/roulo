@@ -4,18 +4,51 @@ import { useState } from "react"
 import { SpinWheel, type WheelItem } from "@/components/SpinWheel"
 import { EditPanel } from "@/components/EditPanel"
 import { AIGeneratePanel } from "@/components/AIGeneratePanel"
+import { WheelSwitcher, type WheelSummary } from "@/components/WheelSwitcher"
 
 interface WheelViewProps {
-  wheelId: string
-  initialName: string
-  initialItems: WheelItem[]
+  initialWheels: WheelSummary[]
+  activeWheelId: string
 }
 
-export function WheelView({ wheelId, initialName, initialItems }: WheelViewProps) {
-  const [items, setItems] = useState<WheelItem[]>(initialItems)
-  const [name, setName] = useState(initialName)
-  const [editing, setEditing] = useState(false)
-  const [aiOpen, setAiOpen] = useState(false)
+export function WheelView({ initialWheels, activeWheelId }: WheelViewProps) {
+  const [wheels, setWheels] = useState<WheelSummary[]>(initialWheels)
+  const [currentId, setCurrentId] = useState(activeWheelId)
+
+  const current = wheels.find((w) => w.id === currentId) ?? wheels[0]
+  const [items, setItems] = useState<WheelItem[]>(
+    current?.wheel_items?.slice().sort((a, b) => (a as WheelItem & { position: number }).position - (b as WheelItem & { position: number }).position) ?? []
+  )
+  const [name, setName] = useState(current?.name ?? "")
+
+  const [panel, setPanel] = useState<"none" | "edit" | "ai" | "wheels">("none")
+
+  function switchWheel(wheel: WheelSummary) {
+    setCurrentId(wheel.id)
+    const sorted = (wheel.wheel_items ?? [])
+      .slice()
+      .sort((a, b) => (a as WheelItem & { position: number }).position - (b as WheelItem & { position: number }).position)
+    setItems(sorted)
+    setName(wheel.name)
+    setPanel("none")
+  }
+
+  function handleWheelCreated(wheel: WheelSummary) {
+    setWheels((prev) => [wheel, ...prev])
+    switchWheel(wheel)
+  }
+
+  function handleWheelDeleted(wheelId: string) {
+    const remaining = wheels.filter((w) => w.id !== wheelId)
+    setWheels(remaining)
+    if (wheelId === currentId && remaining.length > 0) {
+      switchWheel(remaining[0])
+    }
+  }
+
+  function toggle(p: "edit" | "ai" | "wheels") {
+    setPanel((prev) => (prev === p ? "none" : p))
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -25,18 +58,24 @@ export function WheelView({ wheelId, initialName, initialItems }: WheelViewProps
           <h1 className="text-2xl font-bold tracking-tight">Roulo</h1>
           <p className="text-sm text-muted-foreground">{name}</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <button
-            onClick={() => { setAiOpen((v) => !v); setEditing(false) }}
+            onClick={() => toggle("wheels")}
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            {aiOpen ? "Close AI" : "✨ AI"}
+            {panel === "wheels" ? "Close" : "Wheels"}
           </button>
           <button
-            onClick={() => { setEditing((v) => !v); setAiOpen(false) }}
+            onClick={() => toggle("ai")}
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            {editing ? "Done" : "Edit"}
+            {panel === "ai" ? "Close AI" : "✨ AI"}
+          </button>
+          <button
+            onClick={() => toggle("edit")}
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {panel === "edit" ? "Done" : "Edit"}
           </button>
           <form action="/auth/signout" method="POST">
             <button
@@ -51,35 +90,51 @@ export function WheelView({ wheelId, initialName, initialItems }: WheelViewProps
 
       {/* Wheel — always visible */}
       {items.length >= 2 ? (
-        <SpinWheel wheelId={wheelId} items={items} />
+        <SpinWheel wheelId={currentId} items={items} />
       ) : (
         <p className="text-center text-muted-foreground py-8 text-sm">
           Add at least 2 items to spin the wheel.
         </p>
       )}
 
+      {/* Wheels panel */}
+      {panel === "wheels" && (
+        <WheelSwitcher
+          wheels={wheels}
+          activeWheelId={currentId}
+          onSwitch={switchWheel}
+          onWheelCreated={handleWheelCreated}
+          onWheelDeleted={handleWheelDeleted}
+        />
+      )}
+
       {/* AI Generate panel */}
-      {aiOpen && (
+      {panel === "ai" && (
         <AIGeneratePanel
-          wheelId={wheelId}
+          wheelId={currentId}
           onItemsChange={(newItems) => {
             setItems(newItems)
-            setAiOpen(false)
+            setPanel("none")
           }}
         />
       )}
 
-      {/* Edit panel — shown when editing */}
-      {editing && (
+      {/* Edit panel */}
+      {panel === "edit" && (
         <div className="border-t pt-6">
           <h2 className="text-sm font-semibold mb-4 text-muted-foreground uppercase tracking-wide">
             Edit Wheel
           </h2>
           <EditPanel
-            wheelId={wheelId}
+            wheelId={currentId}
             wheelName={name}
             items={items}
-            onNameChange={setName}
+            onNameChange={(n) => {
+              setName(n)
+              setWheels((prev) =>
+                prev.map((w) => (w.id === currentId ? { ...w, name: n } : w))
+              )
+            }}
             onItemsChange={setItems}
           />
         </div>

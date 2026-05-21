@@ -18,13 +18,12 @@ export default async function AppPage() {
   } = await supabase.auth.getUser()
   if (!user) redirect("/login")
 
-  // Fetch user's first wheel with items
+  // Fetch all user wheels with items
   let { data: wheels } = await supabase
     .from("wheels")
     .select("*, wheel_items(*)")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
-    .limit(1)
 
   // Seed default wheel for new users
   if (!wheels || wheels.length === 0) {
@@ -54,18 +53,14 @@ export default async function AppPage() {
     }
   }
 
-  const wheel = wheels?.[0]
-  const items = (wheel?.wheel_items ?? []).sort(
-    (a: { position: number }, b: { position: number }) => a.position - b.position
-  )
+  const activeWheel = wheels![0]
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-background px-4 py-8">
       <div className="w-full max-w-sm">
         <WheelView
-          wheelId={wheel!.id}
-          initialName={wheel?.name ?? "My Wheel"}
-          initialItems={items}
+          initialWheels={wheels ?? []}
+          activeWheelId={activeWheel.id}
         />
       </div>
     </main>
