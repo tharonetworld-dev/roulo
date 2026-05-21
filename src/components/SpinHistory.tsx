@@ -12,10 +12,10 @@ interface SpinHistoryProps {
   refreshKey?: number
 }
 
-
 export function SpinHistory({ wheelId, refreshKey = 0 }: SpinHistoryProps) {
   const [history, setHistory] = useState<SpinRecord[]>([])
   const [loading, setLoading] = useState(true)
+  const [clearing, setClearing] = useState(false)
   const [error, setError] = useState("")
 
   useEffect(() => {
@@ -30,6 +30,21 @@ export function SpinHistory({ wheelId, refreshKey = 0 }: SpinHistoryProps) {
       .catch(() => setError("Failed to load history"))
       .finally(() => setLoading(false))
   }, [wheelId, refreshKey])
+
+  async function handleClear() {
+    if (clearing) return
+    setClearing(true)
+    try {
+      await fetch(`/api/wheels/${wheelId}/history`, { method: "DELETE" })
+      setHistory([])
+    } catch {
+      setError("Failed to clear history")
+    } finally {
+      setClearing(false)
+    }
+  }
+
+  const total = history.length
 
   return (
     <div className="space-y-2">
@@ -52,19 +67,32 @@ export function SpinHistory({ wheelId, refreshKey = 0 }: SpinHistoryProps) {
       )}
 
       {!loading && history.length > 0 && (
-        <ul className="space-y-1">
-          {history.map((entry, i) => (
-            <li
-              key={entry.id}
-              className="flex items-center rounded-lg px-3 py-2 text-sm bg-muted/50"
-              style={{ opacity: Math.max(0.35, 1 - i * 0.07) }}
-            >
-              <span className="font-medium text-foreground truncate">
-                {entry.result}
-              </span>
-            </li>
-          ))}
-        </ul>
+        <>
+          <ul className="space-y-1">
+            {history.map((entry, i) => (
+              <li
+                key={entry.id}
+                className="flex items-center rounded-lg px-3 py-2 text-sm bg-muted/50"
+                style={{ opacity: Math.max(0.35, 1 - (total - 1 - i) * 0.07) }}
+              >
+                <span className="w-5 shrink-0 text-xs text-muted-foreground">
+                  {i + 1}.
+                </span>
+                <span className="font-medium text-foreground truncate">
+                  {entry.result}
+                </span>
+              </li>
+            ))}
+          </ul>
+
+          <button
+            onClick={handleClear}
+            disabled={clearing}
+            className="w-full mt-1 rounded-lg px-3 py-2 text-xs text-muted-foreground hover:text-destructive hover:bg-muted/50 transition-colors text-left"
+          >
+            {clearing ? "Clearing…" : "Clear history"}
+          </button>
+        </>
       )}
     </div>
   )
