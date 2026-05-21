@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { SpinWheel } from "@/components/SpinWheel"
+import { WheelView } from "@/components/WheelView"
 
 const DEFAULT_ITEMS = [
   { label: "Yes!", weight: 2 },
@@ -26,7 +26,7 @@ export default async function AppPage() {
     .order("created_at", { ascending: false })
     .limit(1)
 
-  // Seed a default wheel for new users
+  // Seed default wheel for new users
   if (!wheels || wheels.length === 0) {
     const { data: newWheel } = await supabase
       .from("wheels")
@@ -61,33 +61,12 @@ export default async function AppPage() {
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-background px-4 py-8">
-      <div className="w-full max-w-sm flex flex-col gap-8">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Roulo</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              {wheel?.name ?? "My Wheel"}
-            </p>
-          </div>
-          <form action="/auth/signout" method="POST">
-            <button
-              type="submit"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Sign out
-            </button>
-          </form>
-        </div>
-
-        {/* Wheel */}
-        {items.length > 0 ? (
-          <SpinWheel wheelId={wheel!.id} items={items} />
-        ) : (
-          <p className="text-center text-muted-foreground py-16">
-            No items on this wheel yet.
-          </p>
-        )}
+      <div className="w-full max-w-sm">
+        <WheelView
+          wheelId={wheel!.id}
+          initialName={wheel?.name ?? "My Wheel"}
+          initialItems={items}
+        />
       </div>
     </main>
   )

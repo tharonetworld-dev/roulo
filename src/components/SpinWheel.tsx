@@ -2,17 +2,7 @@
 
 import { useRef, useEffect, useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
-
-const COLORS = [
-  "#6366f1", // indigo
-  "#8b5cf6", // violet
-  "#ec4899", // pink
-  "#f59e0b", // amber
-  "#10b981", // emerald
-  "#3b82f6", // blue
-  "#f97316", // orange
-  "#14b8a6", // teal
-]
+import { WHEEL_COLORS as COLORS } from "@/lib/wheel-colors"
 
 const SIZE = 300 // logical px
 const DPR = 2   // render at 2× for retina sharpness
@@ -138,7 +128,7 @@ export function SpinWheel({ wheelId, items }: SpinWheelProps) {
     [items, totalWeight]
   )
 
-  // Setup canvas resolution and initial draw
+  // One-time canvas setup — scale for retina, never re-run
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -148,6 +138,10 @@ export function SpinWheel({ wheelId, items }: SpinWheelProps) {
     canvas.style.height = `${SIZE}px`
     const ctx = canvas.getContext("2d")
     ctx?.scale(DPR, DPR)
+  }, []) // ← empty: runs once only
+
+  // Redraw whenever items change (draw recreated when items/totalWeight change)
+  useEffect(() => {
     draw(rotationRef.current)
   }, [draw])
 
