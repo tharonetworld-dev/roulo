@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { createServiceClient } from "@/lib/supabase/service"
-import { stripe, PRICE_MONTHLY, PRICE_YEARLY } from "@/lib/stripe"
+import { getStripe, PRICE_MONTHLY, PRICE_YEARLY } from "@/lib/stripe"
+
+export const dynamic = "force-dynamic"
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://roulo-six.vercel.app"
 
@@ -16,7 +18,8 @@ export async function POST(request: Request) {
   if (plan !== "monthly" && plan !== "yearly")
     return NextResponse.json({ error: "Invalid plan" }, { status: 400 })
 
-  const priceId = plan === "monthly" ? PRICE_MONTHLY : PRICE_YEARLY
+  const priceId = plan === "monthly" ? PRICE_MONTHLY() : PRICE_YEARLY()
+  const stripe = getStripe()
 
   // Get or create Stripe customer
   const service = createServiceClient()

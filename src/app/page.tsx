@@ -61,7 +61,10 @@ export default function Home() {
 
         <div className="flex gap-3 flex-wrap justify-center">
           <Button asChild size="lg" className="text-base px-8">
-            <Link href="/login">Get started free</Link>
+            <Link href="/login">Start free — no card needed</Link>
+          </Button>
+          <Button asChild size="lg" variant="outline" className="text-base px-8">
+            <Link href="/pricing">See pricing</Link>
           </Button>
         </div>
       </section>

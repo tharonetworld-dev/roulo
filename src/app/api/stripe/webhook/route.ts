@@ -1,19 +1,16 @@
 import { NextResponse, type NextRequest } from "next/server"
-import { stripe } from "@/lib/stripe"
+import { getStripe } from "@/lib/stripe"
 import { createServiceClient } from "@/lib/supabase/service"
 import Stripe from "stripe"
 
-// CRITICAL: disable Next.js body parsing — Stripe needs the raw bytes to verify signature
-export const config = { api: { bodyParser: false } }
-
-// App Router equivalent: tell Next.js not to parse the body
+// App Router reads body as a stream — request.text() gives raw bytes for Stripe sig verification
 export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
 
 async function upsertSubscription(
   sub: Stripe.Subscription,
   service: ReturnType<typeof createServiceClient>
 ) {
-  // Find user by stripe_customer_id
   const { data: profile } = await service
     .from("profiles")
     .select("id")
@@ -26,7 +23,9 @@ async function upsertSubscription(
   }
 
   const priceId = sub.items.data[0]?.price.id ?? ""
-  const periodEnd = new Date((sub as Stripe.Subscription & { current_period_end: number }).current_period_end * 1000).toISOString()
+  const periodEnd = new Date(
+    (sub as unknown as { current_period_end: number }).current_period_end * 1000
+  ).toISOString()
 
   await service.from("subscriptions").upsert(
     {
@@ -45,6 +44,7 @@ async function upsertSubscription(
 export async function POST(request: NextRequest) {
   const rawBody = await request.text()
   const sig = request.headers.get("stripe-signature") ?? ""
+  const stripe = getStripe()
 
   let event: Stripe.Event
   try {
@@ -92,17 +92,14 @@ export async function POST(request: NextRequest) {
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice
         console.warn("Payment failed for customer:", invoice.customer)
-        // Future: trigger email notification
         break
       }
 
       default:
-        // Acknowledge unhandled events — Stripe retries on 4xx/5xx
         break
     }
   } catch (err) {
     console.error("Webhook handler error:", err)
-    // Return 200 anyway so Stripe doesn't retry — log and investigate separately
     return NextResponse.json({ error: "Handler error" }, { status: 200 })
   }
 

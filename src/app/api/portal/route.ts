@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { createServiceClient } from "@/lib/supabase/service"
-import { stripe } from "@/lib/stripe"
+import { getStripe } from "@/lib/stripe"
+
+export const dynamic = "force-dynamic"
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://roulo-six.vercel.app"
 
@@ -22,6 +24,7 @@ export async function POST() {
   if (!profile?.stripe_customer_id)
     return NextResponse.json({ error: "No billing account found" }, { status: 404 })
 
+  const stripe = getStripe()
   const portalSession = await stripe.billingPortal.sessions.create({
     customer: profile.stripe_customer_id,
     return_url: `${SITE}/app`,

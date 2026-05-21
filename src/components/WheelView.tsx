@@ -87,6 +87,16 @@ export function WheelView({ initialWheels, activeWheelId }: WheelViewProps) {
           >
             {subPanel === "edit" ? "Done" : "Edit"}
           </button>
+          <button
+            onClick={async () => {
+              const res = await fetch("/api/portal", { method: "POST" })
+              const data = await res.json()
+              if (data.url) window.location.href = data.url
+            }}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Billing
+          </button>
           <form action="/auth/signout" method="POST">
             <button
               type="submit"
