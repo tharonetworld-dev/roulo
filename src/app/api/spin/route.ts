@@ -63,7 +63,7 @@ export async function POST(request: Request) {
           all_options: wheelItems,
         })
         .then(() => console.log("✅ Spin inserted successfully"))
-        // @ts-ignore - Supabase insert returns proper Promise with catch
+        // @ts-expect-error - Supabase insert returns proper Promise with catch
         .catch((err: unknown) => console.error("❌ Insert failed:", err instanceof Error ? err.message : String(err)))
     } else {
       console.log("⚠️ No wheel items found for wheel_id:", wheel_id)
