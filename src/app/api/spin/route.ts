@@ -1,5 +1,9 @@
 import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/service"
+import { isPro } from "@/lib/access"
 import { NextResponse } from "next/server"
+
+export const dynamic = "force-dynamic"
 
 export async function POST(request: Request) {
   const supabase = createClient()
@@ -10,12 +14,48 @@ export async function POST(request: Request) {
 
   const { wheel_id, result } = await request.json()
 
-  const { data, error } = await supabase
-    .from("spin_history")
-    .insert({ wheel_id, user_id: user.id, result })
-    .select()
+  // Check if user is Pro — only log spins for Pro users
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, trial_ends_at")
+    .eq("id", user.id)
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+  if (!profile) {
+    return NextResponse.json({ error: "Profile not found" }, { status: 404 })
+  }
+
+  const { data: subscription } = await supabase
+    .from("subscriptions")
+    .select("status")
+    .eq("user_id", user.id)
+    .single()
+
+  // Fire-and-forget: if Pro, log the spin; if Free, do nothing
+  if (isPro(profile, subscription)) {
+    // Fetch wheel items to capture all_options
+    const { data: wheelItems } = await supabase
+      .from("wheel_items")
+      .select("id, label, weight")
+      .eq("wheel_id", wheel_id)
+      .order("position")
+
+    if (wheelItems && wheelItems.length > 0) {
+      // Insert into wheel_spins asynchronously (fire-and-forget)
+      const service = createServiceClient()
+      service
+        .from("wheel_spins")
+        .insert({
+          user_id: user.id,
+          wheel_id,
+          result_option: result,
+          all_options: wheelItems,
+        })
+        .catch((err) => {
+          console.error("Failed to log spin:", err)
+        })
+    }
+  }
+
+  return NextResponse.json({ success: true })
 }
