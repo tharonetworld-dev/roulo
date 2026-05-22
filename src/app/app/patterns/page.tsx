@@ -102,9 +102,9 @@ export default async function PatternsPage() {
 
   const wheelCounts: Record<string, { name: string; count: number }> = {}
   wheelStats?.forEach((s) => {
-    const stat = s as { wheel_id: string; wheels: { name: string } | null }
+    const stat = s as { wheel_id: string; wheels: Array<{ name: string }> }
     const wheelId = stat.wheel_id
-    const wheelName = stat.wheels?.name || "Unknown"
+    const wheelName = stat.wheels?.[0]?.name || "Unknown"
     if (!wheelCounts[wheelId]) {
       wheelCounts[wheelId] = { name: wheelName, count: 0 }
     }
@@ -335,7 +335,7 @@ export default async function PatternsPage() {
                     id: string
                     result_option: string
                     spun_at: string
-                    wheels: { name: string } | null
+                    wheels: Array<{ name: string }>
                   }
                   const rating = outcomeMap[spin.id]
                   const ratingLabel =
@@ -351,7 +351,7 @@ export default async function PatternsPage() {
                   return (
                     <tr key={spin.id} className="border-b border-border hover:bg-muted/50">
                       <td className="px-6 py-4">
-                        {spin.wheels?.name || "Unknown"}
+                        {spin.wheels?.[0]?.name || "Unknown"}
                       </td>
                       <td className="px-6 py-4 font-medium">{spin.result_option}</td>
                       <td className="px-6 py-4 text-muted-foreground">{date}</td>
