@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, vi } from "vitest"
+import { describe, it, expect, beforeAll } from "vitest"
 import { POST } from "../route"
 
 // Mock environment variables
