@@ -25,11 +25,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Profile not found" }, { status: 404 })
   }
 
-  const { data: subscription } = await supabase
+  const { data: subscription, error: subError } = await supabase
     .from("subscriptions")
     .select("status")
     .eq("user_id", user.id)
-    .single()
+    .maybeSingle()
 
   // Fire-and-forget: if Pro, log the spin; if Free, do nothing
   if (isPro(profile, subscription)) {
