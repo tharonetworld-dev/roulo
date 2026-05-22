@@ -9,6 +9,10 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const cookieStore = cookies()
+
+    // Build a response object to properly set cookies
+    const response = NextResponse.redirect(`${origin}${next}`)
+
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -18,9 +22,11 @@ export async function GET(request: NextRequest) {
             return cookieStore.getAll()
           },
           setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) =>
+            cookiesToSet.forEach(({ name, value, options }) => {
+              // Set in both cookie store AND response to ensure persistence
               cookieStore.set(name, value, options)
-            )
+              response.cookies.set(name, value, options)
+            })
           },
         },
       }
@@ -28,7 +34,7 @@ export async function GET(request: NextRequest) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`)
+      return response
     }
   }
 
