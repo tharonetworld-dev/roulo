@@ -43,6 +43,7 @@ export async function POST(request: Request) {
     if (wheelItems && wheelItems.length > 0) {
       // Insert into wheel_spins asynchronously (fire-and-forget)
       const service = createServiceClient()
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       service
         .from("wheel_spins")
         .insert({
@@ -50,12 +51,6 @@ export async function POST(request: Request) {
           wheel_id,
           result_option: result,
           all_options: wheelItems,
-        })
-        .then(() => {
-          // Logged successfully
-        })
-        .catch((err: unknown) => {
-          console.error("Failed to log spin:", err)
         })
     }
   }
