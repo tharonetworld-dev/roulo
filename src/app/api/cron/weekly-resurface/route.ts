@@ -12,16 +12,6 @@ interface DigestSpins {
   wheels: { name: string }
 }
 
-interface UserProfile {
-  id: string
-  email: string
-  trial_ends_at: string | null
-}
-
-interface UserSubscription {
-  status: string
-}
-
 function formatRelativeDate(dateStr: string): string {
   const date = new Date(dateStr)
   const now = new Date()
@@ -180,10 +170,10 @@ export async function POST(request: Request) {
   }
 
   // Create lookup map for subscriptions
-  const subsMap = new Map(subscriptions?.map((s) => [s.user_id, s]) || [])
+  const subsMap = new Map((subscriptions as any[])?.map((s) => [s.user_id, s]) || [])
 
   // Filter to Pro users only
-  const proUsers = (profiles || []).filter((profile) => {
+  const proUsers = ((profiles as any[]) || []).filter((profile) => {
     const sub = subsMap.get(profile.id)
     return isPro(profile, sub || null)
   })
