@@ -125,8 +125,8 @@ export default async function PatternsPage() {
 
   const optionCounts: Record<string, number> = {}
   topWinners?.forEach((w) => {
-    const winner = w as { wheel_spins: { result_option: string } | null }
-    const option = winner.wheel_spins?.result_option || "Unknown"
+    const winner = w as { wheel_spins: Array<{ result_option: string }> | null }
+    const option = winner.wheel_spins?.[0]?.result_option || "Unknown"
     optionCounts[option] = (optionCounts[option] ?? 0) + 1
   })
 
@@ -147,8 +147,8 @@ export default async function PatternsPage() {
 
   const negativeOptionCounts: Record<string, number> = {}
   bottomOptions?.forEach((b) => {
-    const bottom = b as { wheel_spins: { result_option: string } | null }
-    const option = bottom.wheel_spins?.result_option || "Unknown"
+    const bottom = b as { wheel_spins: Array<{ result_option: string }> | null }
+    const option = bottom.wheel_spins?.[0]?.result_option || "Unknown"
     negativeOptionCounts[option] = (negativeOptionCounts[option] ?? 0) + 1
   })
 
