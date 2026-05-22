@@ -60,10 +60,13 @@ export async function POST(request: Request) {
 
   // Send emails and track in outcome_followups_sent
   for (const spin of spinsToFollowUp) {
-    const profile = (spin as any).profiles as { email: string } | null
-    const wheel = (spin as any).wheels as { name: string } | null
-    const userEmail = profile?.email
-    const wheelName = wheel?.name || "Your Wheel"
+    const spinData = spin as unknown as {
+      id: string
+      profiles: { email: string } | null
+      wheels: { name: string } | null
+    }
+    const userEmail = spinData.profiles?.email
+    const wheelName = spinData.wheels?.name || "Your Wheel"
 
     if (!userEmail) {
       errors.push(`Spin ${spin.id}: no email found`)
@@ -71,15 +74,15 @@ export async function POST(request: Request) {
     }
 
     // Build rating links
-    const ratePositive = `${SITE}/api/spins/${spin.id}/rate?rating=positive`
-    const rateNegative = `${SITE}/api/spins/${spin.id}/rate?rating=negative`
-    const rateDidntTry = `${SITE}/api/spins/${spin.id}/rate?rating=didnt_try`
+    const ratePositive = `${SITE}/api/spins/${spinData.id}/rate?rating=positive`
+    const rateNegative = `${SITE}/api/spins/${spinData.id}/rate?rating=negative`
+    const rateDidntTry = `${SITE}/api/spins/${spinData.id}/rate?rating=didnt_try`
 
     const emailHtml = `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <h2>How did it work out?</h2>
         <p>You spun <strong>${wheelName}</strong> 24 hours ago and got:</p>
-        <p style="font-size: 18px; font-weight: bold; color: #6366f1;">${spin.result_option}</p>
+        <p style="font-size: 18px; font-weight: bold; color: #6366f1;">${spinData.result_option}</p>
         <p>Did it help you decide?</p>
         <div style="margin: 30px 0; display: flex; gap: 10px; flex-wrap: wrap;">
           <a href="${ratePositive}" style="display: inline-block; padding: 12px 24px; background-color: #10b981; color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">
@@ -102,18 +105,18 @@ export async function POST(request: Request) {
       await resend.emails.send({
         from: "Roulo <noreply@roulo.app>",
         to: userEmail,
-        subject: `How did "${spin.result_option}" work out?`,
+        subject: `How did "${spinData.result_option}" work out?`,
         html: emailHtml,
       })
 
       // Mark as sent
       await service.from("outcome_followups_sent").insert({
-        spin_id: spin.id,
+        spin_id: spinData.id,
       })
 
       sentCount++
     } catch (err) {
-      errors.push(`Spin ${spin.id}: ${err instanceof Error ? err.message : String(err)}`)
+      errors.push(`Spin ${spinData.id}: ${err instanceof Error ? err.message : String(err)}`)
     }
   }
 
