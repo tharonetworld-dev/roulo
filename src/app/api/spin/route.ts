@@ -62,6 +62,14 @@ export async function POST(request: Request) {
           result_option: result,
           all_options: wheelItems,
         })
+        .then((res) => {
+          console.log("✅ Spin inserted:", res.data?.length || 0, "rows")
+        })
+        .catch((err) => {
+          console.error("❌ Insert failed:", err.message || err)
+        })
+    } else {
+      console.log("⚠️ No wheel items found for wheel_id:", wheel_id)
     }
   }
 
