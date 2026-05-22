@@ -90,9 +90,9 @@ export function WheelView({ initialWheels, activeWheelId }: WheelViewProps) {
           </button>
           <Link
             href="/app/patterns"
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
           >
-            Patterns
+            📊 Patterns
           </Link>
           <button
             onClick={async () => {
