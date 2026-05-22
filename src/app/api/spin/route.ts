@@ -51,7 +51,10 @@ export async function POST(request: Request) {
           result_option: result,
           all_options: wheelItems,
         })
-        .catch((err) => {
+        .then(() => {
+          // Logged successfully
+        })
+        .catch((err: unknown) => {
           console.error("Failed to log spin:", err)
         })
     }
