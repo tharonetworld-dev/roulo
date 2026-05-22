@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Profile not found" }, { status: 404 })
   }
 
-  const { data: subscription, error: subError } = await supabase
+  const { data: subscription } = await supabase
     .from("subscriptions")
     .select("status")
     .eq("user_id", user.id)
