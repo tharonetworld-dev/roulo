@@ -60,15 +60,23 @@ export async function POST(request: Request) {
       .order("position")
 
     if (wheelItems && wheelItems.length > 0) {
-      // Insert into wheel_spins asynchronously (fire-and-forget)
+      // Insert into wheel_spins asynchronously (fire-and-forget with error logging)
       const service = createServiceClient()
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      void service.from("wheel_spins").insert({
-        user_id: user.id,
-        wheel_id,
-        result_option: result,
-        all_options: wheelItems,
-      })
+      service
+        .from("wheel_spins")
+        .insert({
+          user_id: user.id,
+          wheel_id,
+          result_option: result,
+          all_options: wheelItems,
+        })
+        .catch((err: unknown) => {
+          console.error(
+            "❌ wheel_spins insert failed:",
+            err instanceof Error ? err.message : String(err)
+          )
+        })
     } else {
       console.log("⚠️ No wheel items found for wheel_id:", wheel_id)
     }
