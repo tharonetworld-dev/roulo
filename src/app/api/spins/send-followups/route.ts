@@ -62,6 +62,7 @@ export async function POST(request: Request) {
   for (const spin of spinsToFollowUp) {
     const spinData = spin as unknown as {
       id: string
+      result_option: string
       profiles: { email: string } | null
       wheels: { name: string } | null
     }
