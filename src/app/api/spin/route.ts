@@ -40,9 +40,8 @@ export async function POST(request: Request) {
   console.log("💳 Subscription:", subscription)
   console.log("🔐 isPro:", isPro(profile, subscription))
 
-  // Always log to spin_history for recent spins display
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  void supabase
+  // Always log to spin_history for recent spins display — must await so it completes before returning
+  await supabase
     .from("spin_history")
     .insert({
       user_id: user.id,
