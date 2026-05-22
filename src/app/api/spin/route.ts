@@ -40,7 +40,18 @@ export async function POST(request: Request) {
   console.log("💳 Subscription:", subscription)
   console.log("🔐 isPro:", isPro(profile, subscription))
 
-  // Fire-and-forget: if Pro, log the spin; if Free, do nothing
+  // Always log to spin_history for recent spins display
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  void supabase
+    .from("spin_history")
+    .insert({
+      user_id: user.id,
+      wheel_id,
+      result,
+    })
+    .catch((err: unknown) => console.error("❌ History insert failed:", err instanceof Error ? err.message : String(err)))
+
+  // Fire-and-forget: if Pro, also log the spin to wheel_spins for patterns
   if (isPro(profile, subscription)) {
     console.log("✨ User is Pro, logging spin...")
     // Fetch wheel items to capture all_options
