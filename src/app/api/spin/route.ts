@@ -42,13 +42,14 @@ export async function POST(request: Request) {
 
   // Always log to spin_history for recent spins display
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  void supabase
+  void (supabase
     .from("spin_history")
     .insert({
       user_id: user.id,
       wheel_id,
       result,
-    })
+    }) as Promise<unknown>)
+    // @ts-expect-error - Supabase insert returns proper Promise with catch
     .catch((err: unknown) => console.error("❌ History insert failed:", err instanceof Error ? err.message : String(err)))
 
   // Fire-and-forget: if Pro, also log the spin to wheel_spins for patterns
