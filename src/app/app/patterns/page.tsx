@@ -101,16 +101,15 @@ export default async function PatternsPage() {
     .gte("spun_at", monthStart.toISOString())
 
   const wheelCounts: Record<string, { name: string; count: number }> = {}
-  wheelStats?.forEach(
-    (s: { wheel_id: string; wheels: { name: string } | null }) => {
-      const wheelId = s.wheel_id
-      const wheelName = s.wheels?.name || "Unknown"
-      if (!wheelCounts[wheelId]) {
-        wheelCounts[wheelId] = { name: wheelName, count: 0 }
-      }
-      wheelCounts[wheelId].count++
+  wheelStats?.forEach((s) => {
+    const stat = s as { wheel_id: string; wheels: { name: string } | null }
+    const wheelId = stat.wheel_id
+    const wheelName = stat.wheels?.name || "Unknown"
+    if (!wheelCounts[wheelId]) {
+      wheelCounts[wheelId] = { name: wheelName, count: 0 }
     }
-  )
+    wheelCounts[wheelId].count++
+  })
 
   const mostSpunWheel = Object.values(wheelCounts).sort((a, b) => b.count - a.count)[0]?.name ?? "—"
 
@@ -125,12 +124,11 @@ export default async function PatternsPage() {
     )
 
   const optionCounts: Record<string, number> = {}
-  topWinners?.forEach(
-    (w: { wheel_spins: { result_option: string } | null }) => {
-      const option = w.wheel_spins?.result_option || "Unknown"
-      optionCounts[option] = (optionCounts[option] ?? 0) + 1
-    }
-  )
+  topWinners?.forEach((w) => {
+    const winner = w as { wheel_spins: { result_option: string } | null }
+    const option = winner.wheel_spins?.result_option || "Unknown"
+    optionCounts[option] = (optionCounts[option] ?? 0) + 1
+  })
 
   const topFive = Object.entries(optionCounts)
     .sort((a, b) => b[1] - a[1])
@@ -148,12 +146,11 @@ export default async function PatternsPage() {
     )
 
   const negativeOptionCounts: Record<string, number> = {}
-  bottomOptions?.forEach(
-    (b: { wheel_spins: { result_option: string } | null }) => {
-      const option = b.wheel_spins?.result_option || "Unknown"
-      negativeOptionCounts[option] = (negativeOptionCounts[option] ?? 0) + 1
-    }
-  )
+  bottomOptions?.forEach((b) => {
+    const bottom = b as { wheel_spins: { result_option: string } | null }
+    const option = bottom.wheel_spins?.result_option || "Unknown"
+    negativeOptionCounts[option] = (negativeOptionCounts[option] ?? 0) + 1
+  })
 
   const bottomFive = Object.entries(negativeOptionCounts)
     .sort((a, b) => b[1] - a[1])
@@ -333,36 +330,35 @@ export default async function PatternsPage() {
                 </tr>
               </thead>
               <tbody>
-                {recentSpins?.map(
-                  (spin: {
+                {recentSpins?.map((item) => {
+                  const spin = item as {
                     id: string
                     result_option: string
                     spun_at: string
                     wheels: { name: string } | null
-                  }) => {
-                    const rating = outcomeMap[spin.id]
-                    const ratingLabel =
-                      rating === "positive"
-                        ? "👍 Positive"
-                        : rating === "negative"
-                          ? "👎 Negative"
-                          : rating === "didnt_try"
-                            ? "— Didn't try"
-                            : "—"
-                    const date = new Date(spin.spun_at).toLocaleDateString()
-
-                    return (
-                      <tr key={spin.id} className="border-b border-border hover:bg-muted/50">
-                        <td className="px-6 py-4">
-                          {spin.wheels?.name || "Unknown"}
-                        </td>
-                        <td className="px-6 py-4 font-medium">{spin.result_option}</td>
-                        <td className="px-6 py-4 text-muted-foreground">{date}</td>
-                        <td className="px-6 py-4">{ratingLabel}</td>
-                      </tr>
-                    )
                   }
-                )}
+                  const rating = outcomeMap[spin.id]
+                  const ratingLabel =
+                    rating === "positive"
+                      ? "👍 Positive"
+                      : rating === "negative"
+                        ? "👎 Negative"
+                        : rating === "didnt_try"
+                          ? "— Didn't try"
+                          : "—"
+                  const date = new Date(spin.spun_at).toLocaleDateString()
+
+                  return (
+                    <tr key={spin.id} className="border-b border-border hover:bg-muted/50">
+                      <td className="px-6 py-4">
+                        {spin.wheels?.name || "Unknown"}
+                      </td>
+                      <td className="px-6 py-4 font-medium">{spin.result_option}</td>
+                      <td className="px-6 py-4 text-muted-foreground">{date}</td>
+                      <td className="px-6 py-4">{ratingLabel}</td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
