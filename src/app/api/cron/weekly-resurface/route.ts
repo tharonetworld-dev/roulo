@@ -22,12 +22,6 @@ interface UserSubscription {
   status: string
 }
 
-interface UserWithDigest {
-  user_id: string
-  profiles: UserProfile
-  subscriptions: UserSubscription | null
-}
-
 function formatRelativeDate(dateStr: string): string {
   const date = new Date(dateStr)
   const now = new Date()
@@ -165,37 +159,41 @@ export async function POST(request: Request) {
   const since365d = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000)
   const since30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 
-  // Get Pro users (includes subscription or active trial)
-  const { data: users, error: usersError } = await service
-    .from("wheel_spins")
-    .select(
-      `
-      user_id,
-      profiles:user_id (id, email, trial_ends_at),
-      subscriptions (status)
-    `
-    )
-    .gte("spun_at", since365d.toISOString())
-    .lte("spun_at", since30d.toISOString())
+  // Get all Pro users (active subscription or active trial)
+  const { data: profiles, error: profilesError } = await service
+    .from("profiles")
+    .select("id, email, trial_ends_at")
 
-  if (usersError) {
-    console.error("❌ Failed to fetch users:", usersError)
-    return NextResponse.json({ error: usersError.message }, { status: 500 })
+  if (profilesError) {
+    console.error("❌ Failed to fetch profiles:", profilesError)
+    return NextResponse.json({ error: profilesError.message }, { status: 500 })
   }
 
-  const uniqueUsers = Array.from(
-    new Map(
-      (users as UserWithDigest[])?.map((u) => [
-        u.user_id,
-        {
-          userId: u.user_id,
-          email: u.profiles.email,
-          profile: u.profiles,
-          subscription: u.subscriptions,
-        },
-      ]) || []
-    ).values()
-  )
+  // Get subscriptions for all users
+  const { data: subscriptions, error: subsError } = await service
+    .from("subscriptions")
+    .select("user_id, status")
+
+  if (subsError) {
+    console.error("❌ Failed to fetch subscriptions:", subsError)
+    return NextResponse.json({ error: subsError.message }, { status: 500 })
+  }
+
+  // Create lookup map for subscriptions
+  const subsMap = new Map(subscriptions?.map((s) => [s.user_id, s]) || [])
+
+  // Filter to Pro users only
+  const proUsers = (profiles || []).filter((profile) => {
+    const sub = subsMap.get(profile.id)
+    return isPro(profile, sub || null)
+  })
+
+  const uniqueUsers = proUsers.map((profile) => ({
+    userId: profile.id,
+    email: profile.email,
+    profile,
+    subscription: subsMap.get(profile.id) || null,
+  }))
 
   total = uniqueUsers.length
 
@@ -203,13 +201,6 @@ export async function POST(request: Request) {
 
   for (const user of uniqueUsers) {
     try {
-      // Check if Pro
-      if (!isPro(user.profile, user.subscription)) {
-        console.log(`⏭️ Skipping non-Pro user ${user.userId}`)
-        skipped++
-        continue
-      }
-
       // Check idempotency: already sent this week?
       const weekStart = getWeekStart(now)
       const { data: alreadySent, error: idempotencyError } = await service
