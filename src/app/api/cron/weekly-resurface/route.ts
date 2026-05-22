@@ -9,7 +9,7 @@ interface DigestSpins {
   id: string
   result_option: string
   spun_at: string
-  wheels: { name: string }
+  wheels: Array<{ name: string }>
 }
 
 function formatRelativeDate(dateStr: string): string {
@@ -35,7 +35,7 @@ function buildDigestEmail(spins: DigestSpins[], userName: string): string {
       return `
         <div style="margin: 20px 0; padding: 15px; background-color: #f8f8f8; border-radius: 8px;">
           <p style="margin: 0 0 8px 0; font-weight: 600; color: #1a1a1a;">
-            ${spin.wheels.name}
+            ${spin.wheels?.[0]?.name || "Untitled Wheel"}
           </p>
           <p style="margin: 0 0 12px 0; font-size: 16px; color: #333;">
             <strong>${spin.result_option}</strong> — ${formatRelativeDate(spin.spun_at)}
