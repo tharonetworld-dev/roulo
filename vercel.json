@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/weekly-resurface",
+      "schedule": "0 14 * * 0"
+    }
+  ]
+}
