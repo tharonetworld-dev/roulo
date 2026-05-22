@@ -170,15 +170,28 @@ export async function POST(request: Request) {
   }
 
   // Create lookup map for subscriptions
-  const subsMap = new Map((subscriptions as any[])?.map((s) => [s.user_id, s]) || [])
+  type Sub = { user_id: string; status: string }
+  type Profile = { id: string; email: string; trial_ends_at: string | null }
+
+  const subsMap = new Map<string, Sub>()
+  if (subscriptions && Array.isArray(subscriptions)) {
+    subscriptions.forEach((s: Sub) => {
+      subsMap.set(s.user_id, s)
+    })
+  }
 
   // Filter to Pro users only
-  const proUsers = ((profiles as any[]) || []).filter((profile) => {
-    const sub = subsMap.get(profile.id)
-    return isPro(profile, sub || null)
-  })
+  const proUsers: Profile[] = []
+  if (profiles && Array.isArray(profiles)) {
+    profiles.forEach((profile: Profile) => {
+      const sub = subsMap.get(profile.id)
+      if (isPro(profile, sub || null)) {
+        proUsers.push(profile)
+      }
+    })
+  }
 
-  const uniqueUsers = proUsers.map((profile) => ({
+  const uniqueUsers = proUsers.map((profile: Profile) => ({
     userId: profile.id,
     email: profile.email,
     profile,
