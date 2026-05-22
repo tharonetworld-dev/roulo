@@ -49,8 +49,6 @@ export async function POST(request: Request) {
       wheel_id,
       result,
     })
-    // @ts-expect-error - Supabase insert returns proper Promise with catch
-    .catch((err: unknown) => console.error("❌ History insert failed:", err instanceof Error ? err.message : String(err)))
 
   // Fire-and-forget: if Pro, also log the spin to wheel_spins for patterns
   if (isPro(profile, subscription)) {
@@ -66,17 +64,12 @@ export async function POST(request: Request) {
       // Insert into wheel_spins asynchronously (fire-and-forget)
       const service = createServiceClient()
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      void service
-        .from("wheel_spins")
-        .insert({
-          user_id: user.id,
-          wheel_id,
-          result_option: result,
-          all_options: wheelItems,
-        })
-        .then(() => console.log("✅ Spin inserted successfully"))
-        // @ts-expect-error - Supabase insert returns proper Promise with catch
-        .catch((err: unknown) => console.error("❌ Insert failed:", err instanceof Error ? err.message : String(err)))
+      void service.from("wheel_spins").insert({
+        user_id: user.id,
+        wheel_id,
+        result_option: result,
+        all_options: wheelItems,
+      })
     } else {
       console.log("⚠️ No wheel items found for wheel_id:", wheel_id)
     }
