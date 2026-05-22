@@ -165,16 +165,15 @@ export async function POST(request: Request) {
   const since365d = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000)
   const since30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 
-  // Get Pro users
+  // Get Pro users (includes subscription or active trial)
   const { data: users, error: usersError } = await service
     .from("wheel_spins")
     .select(
       `
       user_id,
       profiles:user_id (id, email, trial_ends_at),
-      subscriptions!inner (status)
-    `,
-      { count: "exact" }
+      subscriptions (status)
+    `
     )
     .gte("spun_at", since365d.toISOString())
     .lte("spun_at", since30d.toISOString())
