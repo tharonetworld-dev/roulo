@@ -54,20 +54,21 @@ export async function POST(request: Request) {
       // Insert into wheel_spins asynchronously (fire-and-forget)
       const service = createServiceClient()
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      service
-        .from("wheel_spins")
-        .insert({
-          user_id: user.id,
-          wheel_id,
-          result_option: result,
-          all_options: wheelItems,
-        })
-        .then(() => {
+      (async () => {
+        try {
+          await service
+            .from("wheel_spins")
+            .insert({
+              user_id: user.id,
+              wheel_id,
+              result_option: result,
+              all_options: wheelItems,
+            })
           console.log("✅ Spin inserted successfully")
-        })
-        .catch((err: unknown) => {
+        } catch (err: unknown) {
           console.error("❌ Insert failed:", err instanceof Error ? err.message : String(err))
-        })
+        }
+      })()
     } else {
       console.log("⚠️ No wheel items found for wheel_id:", wheel_id)
     }
