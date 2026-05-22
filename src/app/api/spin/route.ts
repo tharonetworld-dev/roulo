@@ -10,9 +10,14 @@ export async function POST(request: Request) {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  if (!user) {
+    console.log("❌ No user found")
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
 
+  console.log("✅ User:", user.id)
   const { wheel_id, result } = await request.json()
+  console.log("📊 Spin request:", { wheel_id, result })
 
   // Check if user is Pro — only log spins for Pro users
   const { data: profile } = await supabase
@@ -31,8 +36,13 @@ export async function POST(request: Request) {
     .eq("user_id", user.id)
     .maybeSingle()
 
+  console.log("📋 Profile:", profile)
+  console.log("💳 Subscription:", subscription)
+  console.log("🔐 isPro:", isPro(profile, subscription))
+
   // Fire-and-forget: if Pro, log the spin; if Free, do nothing
   if (isPro(profile, subscription)) {
+    console.log("✨ User is Pro, logging spin...")
     // Fetch wheel items to capture all_options
     const { data: wheelItems } = await supabase
       .from("wheel_items")
