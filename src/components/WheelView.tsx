@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { SpinWheel, type WheelItem } from "@/components/SpinWheel"
 import { EditPanel } from "@/components/EditPanel"
 import { AIGeneratePanel } from "@/components/AIGeneratePanel"
@@ -87,6 +88,12 @@ export function WheelView({ initialWheels, activeWheelId }: WheelViewProps) {
           >
             {subPanel === "edit" ? "Done" : "Edit"}
           </button>
+          <Link
+            href="/app/patterns"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Patterns
+          </Link>
           <button
             onClick={async () => {
               const res = await fetch("/api/portal", { method: "POST" })
